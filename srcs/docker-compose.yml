@@ -14,7 +14,7 @@ services:
       - wordpress_data:/var/www/html
     networks:
       - network-inc
-    restart: on-failure
+    restart: always
 
   mariadb:
     build: ./requirements/mariadb
@@ -30,7 +30,7 @@ services:
       - mariadb_data:/var/lib/mysql
     networks:
       - network-inc
-    restart: on-failure
+    restart: always
  
   wordpress:
     build: ./requirements/wordpress
@@ -39,13 +39,9 @@ services:
     hostname: wordpress
     depends_on:
       - mariadb
-    restart: on-failure
-    environment:
-      - DB_USER_USERNAME=${DB_USER_USERNAME}
-      - DB_USER_PASS=${DB_USER_PASS}
-      - DB_ROOT_PASS=${DB_USER_PASS}
-      - DB_HOSTNAME=${DB_HOSTNAME}
-      - DB_NAME=${DB_NAME}
+    restart: always
+    env_file:
+      - .env
     volumes:
       - wordpress_data:/var/www/html
     networks:
