@@ -1,0 +1,71 @@
+version: "3"
+
+services:
+  nginx:
+    build: ./requirements/nginx
+    container_name: nginx
+    depends_on:
+      - mariadb
+    image: nginx:nginx
+    hostname: nginx
+    ports:
+      - "443:443"
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - network-inc
+    restart: on-failure
+
+  mariadb:
+    build: ./requirements/mariadb
+    container_name: mariadb
+    image: mariadb:mariadb
+    hostname: mariadb
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER_USERNAME=${DB_USER_USERNAME}
+      - DB_USER_PASS=${DB_USER_PASS}
+      - DB_ROOT_PASS=${DB_ROOT_PASS}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - network-inc
+    restart: on-failure
+ 
+  wordpress:
+    build: ./requirements/wordpress
+    container_name: wordpress
+    image: wordpress:wordpress
+    hostname: wordpress
+    depends_on:
+      - mariadb
+    restart: on-failure
+    environment:
+      - DB_USER_USERNAME=${DB_USER_USERNAME}
+      - DB_USER_PASS=${DB_USER_PASS}
+      - DB_ROOT_PASS=${DB_USER_PASS}
+      - DB_HOSTNAME=${DB_HOSTNAME}
+      - DB_NAME=${DB_NAME}
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - network-inc
+
+
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${DB_PATH}/mariadb
+      o: bind
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${DB_PATH}/wordpress
+      o: bind
+
+networks:
+  network-inc:
+    driver: bridge
