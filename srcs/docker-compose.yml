@@ -4,22 +4,20 @@ services:
   nginx:
     build: ./requirements/nginx
     container_name: nginx
-    depends_on:
-      - mariadb
-    image: nginx:nginx
+    image: nginx:ogcetin
     hostname: nginx
     ports:
       - "443:443"
     volumes:
       - wordpress_data:/var/www/html
     networks:
-      - network-inc
+      - network-ogcetin
     restart: always
 
   mariadb:
     build: ./requirements/mariadb
     container_name: mariadb
-    image: mariadb:mariadb
+    image: mariadb:inception
     hostname: mariadb
     environment:
       - DB_NAME=${DB_NAME}
@@ -29,23 +27,35 @@ services:
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
-      - network-inc
+      - network-ogcetin
     restart: always
  
   wordpress:
     build: ./requirements/wordpress
     container_name: wordpress
-    image: wordpress:wordpress
+    image: wordpress:inception
     hostname: wordpress
     depends_on:
       - mariadb
+      - redis
     restart: always
     env_file:
       - .env
     volumes:
       - wordpress_data:/var/www/html
     networks:
-      - network-inc
+      - network-ogcetin
+
+  redis:
+    build: ./requirements/bonus/redis
+    container_name: redis
+    image: redis:inception
+    hostname: redis
+    restart: always
+    networks:
+      - network-ogcetin
+    ports:
+      - 6379:6379
 
 
 volumes:
@@ -55,6 +65,7 @@ volumes:
       type: none
       device: ${DB_PATH}/mariadb
       o: bind
+
   wordpress_data:
     driver: local
     driver_opts:
@@ -62,6 +73,7 @@ volumes:
       device: ${DB_PATH}/wordpress
       o: bind
 
+
 networks:
-  network-inc:
+  network-ogcetin:
     driver: bridge

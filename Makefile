@@ -1,4 +1,5 @@
 DC := docker-compose -f ./srcs/docker-compose.yml
+
 DB_PATH = /home/ogcetin/data
 
 all:
