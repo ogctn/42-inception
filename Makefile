@@ -1,35 +1,22 @@
-NAME		 = inception
+DC := docker-compose -f ./srcs/docker-compose.yml
+DB_PATH = $(realpath .)/data
 
-DB_PATH		:= /home/ogcetin/data
-HOST_LINK	:= "127.0.0.1	ogcetin.42.fr" > /etc/hosts
+all:	set_path
+		@mkdir -p $(DB_PATH)
+		@mkdir -p $(DB_PATH)/wordpress
+		@mkdir -p $(DB_PATH)/mariadb
+		@$(DC) up -d --build
 
-all		:	$(NAME) up
+down:
+		@$(DC) down
 
-$(NAME)	:
-	@sudo mkdir -p $(DB_PATH)/mariadb
-	@sudo mkdir -p $(DB_PATH)/wordpress
-	@sudo echo $(HOST_LINK)
-	@sudo chmod -R 777 $(DB_PATH)
+clean: down
+		@docker volume rm $(shell docker volume ls -q) || true
+		@docker network prune --force || true
 
-down	:
-	@docker-compose -f ./srcs/docker-compose.yml --env-file srcs/.env down
+set_path:
+		@sed -i '/^DB_PATH=/c\DB_PATH=$(DB_PATH)' ./srcs/.env
 
-up	:
-	@sudo docker-compose -f ./srcs/docker-compose.yml --env-file srcs/.env up -d
+re: down all
 
-
-clean	: down
-	@docker-compose -f ./srcs/docker-compose.yml --env-file srcs/.env down --volumes
-	@docker container prune --force
-	@docker image prune --force
-	@sudo rm -rf $(DB_PATH)/mariadb/*
-	@sudo rm -rf $(DB_PATH)/wordpress/*
-
-fclean	: clean
-	@sudo rm -rf $(DB_PATH)
-	@docker network prune --force
-	@docker volume prune --force
-
-re	: fclean all
-
-.PHONY	: all clean fclean re
+.PHONY: all down re
