@@ -19,11 +19,8 @@ services:
     container_name: mariadb
     image: mariadb:inception
     hostname: mariadb
-    environment:
-      - DB_NAME=${DB_NAME}
-      - DB_USER_USERNAME=${DB_USER_USERNAME}
-      - DB_USER_PASS=${DB_USER_PASS}
-      - DB_ROOT_PASS=${DB_ROOT_PASS}
+    env_file:
+        - .env
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:

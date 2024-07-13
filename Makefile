@@ -1,24 +1,27 @@
-DC := docker-compose -f ./srcs/docker-compose.yml
+DC := docker-compose -f srcs/docker-compose.yml
+DB_PATH = $(realpath .)/data
 
-DB_PATH = /home/ogcetin/data
-
-all:
+all:	set_path
 	@mkdir -p $(DB_PATH)
 	@mkdir -p $(DB_PATH)/wordpress
 	@mkdir -p $(DB_PATH)/mariadb
 	@$(DC) up -d --build
-	@sudo echo "127.0.0.1 ogcetin.42.fr" > /etc/hosts
 
+up:
+	@$(DC) -d up
 down:
 	@$(DC) down
 
 clean: down
-	@rm -rf /home/ogcetin/data
-	@docker stop $(docker ps -qa); \
-	docker rm $(docker ps -qa); \
-	docker volume rm $(docker volume ls -q); \
-	docker network rm $(docker network ls -q) 2>/dev/null;
+	@docker volume rm $(shell docker volume ls -q) || true
+	@docker network prune --force || true
 
-re: down all
+fclean: clean
+	@sudo rm -rf data
+
+set_path:
+	@sed -i '/^DB_PATH=/c\DB_PATH=$(DB_PATH)' ./srcs/.env
+
+re: fclean all
 
 .PHONY: all down re
