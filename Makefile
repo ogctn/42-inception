@@ -1,5 +1,5 @@
 DC := docker-compose -f srcs/docker-compose.yml
-DB_PATH = $(realpath .)/data
+DB_PATH = /home/ogcetin/data
 
 all:	set_path
 	@mkdir -p $(DB_PATH)
